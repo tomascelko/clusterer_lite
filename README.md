@@ -14,7 +14,7 @@ A liteweight single-threaded implementation of the event-building for data drive
 
 * Create the build directory and navigate to it, for instance:
 
-  ```mkdir build & cd build```
+  ```mkdir build && cd build```
 * Create the generator files (e.g. Makefile):
   
   ```cmake ..```
