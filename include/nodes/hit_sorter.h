@@ -1,10 +1,10 @@
 #pragma once
+#include "../data_structs/burda_hit.h"
 #include <algorithm>
 #include <queue>
-#include "../data_structs/burda_hit.h"
+
 // uses heap sorting (priority queue) to guarantee temporal orderedness of hits
-template <typename data_type>
-class hit_sorter
+template <typename data_type> class hit_sorter
 {
   // sorts mm hits temporally
   struct toa_comparer
@@ -18,6 +18,7 @@ class hit_sorter
       return false;
     }
   };
+
   // for sorting burda hits temporally
   struct burda_toa_comparer
   {
@@ -34,8 +35,10 @@ class hit_sorter
       return false;
     }
   };
+
   using hits_optional_type = std::optional<std::vector<data_type>>;
-  std::priority_queue<data_type, std::vector<data_type>, toa_comparer> priority_queue_;
+  std::priority_queue<data_type, std::vector<data_type>, toa_comparer>
+      priority_queue_;
   // maximal unorderedness of the datastream
   const double DEQUEUE_TIME = 500000.;
   // check for outputting the hits every DEQUEUE_CHECK_INTERVAL hits
@@ -46,12 +49,12 @@ public:
   hit_sorter()
   {
     toa_comparer less_comparer;
-    priority_queue_ = std::priority_queue<data_type, std::vector<data_type>, toa_comparer>(less_comparer);
+    priority_queue_ =
+        std::priority_queue<data_type, std::vector<data_type>, toa_comparer>(
+            less_comparer);
   }
-  std::string name()
-  {
-    return "hit_sorter";
-  }
+
+  std::string name() { return "hit_sorter"; }
 
   hits_optional_type process_hit(data_type &&hit)
   {
@@ -71,6 +74,7 @@ public:
     else
       return std::nullopt;
   }
+
   std::vector<data_type> process_remaining()
   {
     std::vector<data_type> hits;

@@ -1,8 +1,9 @@
 #pragma once
+#include "../other/utils.h"
+#include <iostream>
 #include <memory>
 #include <vector>
-#include <iostream>
-#include "../other/utils.h"
+
 // a memory efficient hit information format, resulting from Katherine readout
 // however, it is difficult to analyze it directly
 class burda_hit
@@ -14,7 +15,8 @@ class burda_hit
   // number of ticks of te fast clock
   short fast_toa_;
   // time over threshold in ticks
-  int16_t tot_; // can be zero because of chip error, so we set invalid value to -1
+  int16_t
+      tot_; // can be zero because of chip error, so we set invalid value to -1
 public:
   burda_hit(uint16_t linear_coord, int64_t toa, short fast_toa, int16_t tot);
   burda_hit(std::istream *in_stream);
@@ -38,6 +40,7 @@ public:
   bool operator<(const burda_hit &other) const;
   bool operator==(const burda_hit &other) const;
 };
+
 // serialization of the hit
 std::ostream &operator<<(std::ostream &os, const burda_hit &hit);
 // deserialization of the hit

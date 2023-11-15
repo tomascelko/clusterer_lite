@@ -1,8 +1,9 @@
 #pragma once
-#include <variant>
-#include "../nodes/node_package.h"
 #include "../devices/current_device.h"
+#include "../nodes/node_package.h"
 #include "../other/mm_stream.h"
+#include <variant>
+
 class dataflow_controller
 {
   using reader_type = data_reader<std::ifstream>;
@@ -21,6 +22,7 @@ class dataflow_controller
   void finalize();
 
 public:
-  dataflow_controller(const node_args &args, const std::string &data_file, const std::string &calib_folder);
+  dataflow_controller(const node_args &args, const std::string &data_file,
+                      const std::string &calib_folder);
   void run();
 };

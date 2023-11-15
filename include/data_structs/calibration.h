@@ -1,11 +1,12 @@
 #include "../other/utils.h"
-#include <vector>
-#include <string>
-#include <iomanip>
-#include <string_view>
-#include <iostream>
 #include <cmath>
+#include <iomanip>
+#include <iostream>
+#include <string>
+#include <string_view>
+#include <vector>
 #pragma once
+
 // object which is capable of converting ToT in ticks to deposited enegy in keV
 class calibration
 {
@@ -19,7 +20,8 @@ class calibration
   static constexpr std::string_view c_suffix = "c.txt";
   static constexpr std::string_view t_suffix = "t.txt";
 
-  void load_calib_vector(std::string &&name, const coord &chip_size, std::vector<std::vector<double>> &vector);
+  void load_calib_vector(std::string &&name, const coord &chip_size,
+                         std::vector<std::vector<double>> &vector);
   bool has_last_folder_separator(const std::string &path);
   std::string add_last_folder_separator(const std::string &path);
 

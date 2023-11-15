@@ -1,12 +1,12 @@
 #pragma once
-#include <boost/asio.hpp>
 #include <boost/array.hpp>
+#include <boost/asio.hpp>
 #include <boost/asio/ip/icmp.hpp>
 #include <chrono>
+#include <iostream>
 #include <thread>
 #include <utility>
 #include <vector>
-#include <iostream>
 // reader capable of offsetting hits and modifying frequency of data stream
 using namespace std::chrono_literals;
 enum class command_type
@@ -44,10 +44,9 @@ class katherine_parser
 
 public:
   uint64_t total_hits_received = 0;
-  uint32_t time_offset()
-  {
-    return time_offset_;
-  }
+
+  uint32_t time_offset() { return time_offset_; }
+
   std::string parse_chip_id(char *response)
   {
     std::cout << "Chip iD ";
@@ -55,15 +54,18 @@ public:
     int y = (int)(response[0] >> 4 & 0xf);
     int w = (int)(response[2] << 4 | response[1]);
     std::stringstream chip_id{};
-    chip_id << std::string{char('A' + (char)x)} << y << "-W000" << w << std::endl;
+    chip_id << std::string{char('A' + (char)x)} << y << "-W000" << w
+            << std::endl;
     return chip_id.str();
   }
+
   double parse_single_float(char *response)
   {
     float result;
     std::memcpy(&result, response, sizeof(float));
     return result;
   }
+
   burda_hit parse_burda_hit(int64_t data, uint32_t offset)
   {
 
@@ -75,8 +77,9 @@ public:
     int16_t tot = (data & 0x3fffL) >> 4;
     uint8_t fast_toa = data & 0xfL;
     return burda_hit{linear_coord, toa, fast_toa, tot};
-    // std::cout << "Hit data " << std::setprecision(10) << hit.linear_coord() << " " << hit.toa() << " " << hit.fast_toa() << " " << hit.tot() << std::endl;
-    // return hit;
+    // std::cout << "Hit data " << std::setprecision(10) << hit.linear_coord()
+    // << " " << hit.toa() << " " << hit.fast_toa() << " " << hit.tot() <<
+    // std::endl; return hit;
   }
 
   bool parse_6byte_data_frame(int64_t data_frame, std::vector<burda_hit> &hits)
@@ -99,7 +102,8 @@ public:
       return true;
       break;
     case measurement_data_type::LOST_PIXEL_COUNT:
-      std::cout << "Lost pixels in Katherine: " << (data_frame & 0x0fffffffff) << std::endl;
+      std::cout << "Lost pixels in Katherine: " << (data_frame & 0x0fffffffff)
+                << std::endl;
       return true;
     default:
       // std::cout << std::hex << ( data_frame >> 44) << std::endl;
@@ -108,7 +112,9 @@ public:
     }
     return false;
   }
-  std::vector<burda_hit> parse_udp_data_packet(char *packet, size_t packet_size, bool &is_final_df)
+
+  std::vector<burda_hit> parse_udp_data_packet(char *packet, size_t packet_size,
+                                               bool &is_final_df)
   {
     // std::cout << "Packet size" << packet_size << std::endl;
     const uint32_t DF_SIZE = 6;
@@ -118,7 +124,8 @@ public:
     for (size_t df_index = 0; df_index < packet_size; df_index += DF_SIZE)
     {
       int64_t df_int = 0x0;
-      std::memcpy(&df_int, packet + df_index * sizeof(char), DF_SIZE * sizeof(char));
+      std::memcpy(&df_int, packet + df_index * sizeof(char),
+                  DF_SIZE * sizeof(char));
       // std::cout << df_index << std::endl;
       is_final_df = parse_6byte_data_frame(df_int, hits);
     }
@@ -145,8 +152,10 @@ public:
   boost::asio::ip::udp::socket local_data_socket;
   boost::asio::ip::udp::endpoint remote_data_endpoint;
 
-  boost::asio::ip::udp::endpoint local_endpoint{boost::asio::ip::udp::v4(), CONTROL_PORT};
-  boost::asio::ip::udp::endpoint local_data_endpoint{boost::asio::ip::udp::v4(), DATA_PORT};
+  boost::asio::ip::udp::endpoint local_endpoint{boost::asio::ip::udp::v4(),
+                                                CONTROL_PORT};
+  boost::asio::ip::udp::endpoint local_data_endpoint{boost::asio::ip::udp::v4(),
+                                                     DATA_PORT};
 
   boost::asio::ip::udp::endpoint sender_endpoint;
 
@@ -155,7 +164,9 @@ public:
 
   katherine_parser parser{};
 
-  std::vector<char *> responses = {new char[8], new char[8], new char[8], new char[8], new char[8], new char[8], new char[8], new char[8], new char[8], new char[8]};
+  std::vector<char *> responses = {
+      new char[8], new char[8], new char[8], new char[8], new char[8],
+      new char[8], new char[8], new char[8], new char[8], new char[8]};
   char *data_response = new char[UDP_BOOST_BUFFER_SIZE]{0x0};
   uint32_t command_index = 0;
 
@@ -164,6 +175,7 @@ public:
   int32_t no_response_count = 0;
 
   bool wainting_for_response = false;
+
   void setup_control()
   {
     local_control_socket.open(local_endpoint.protocol());
@@ -172,33 +184,47 @@ public:
     local_data_socket.open(local_data_endpoint.protocol());
     local_data_socket.bind(local_data_endpoint);
   }
+
   void send_command(char *command, bool wait_for_reply = true)
   {
 
-    local_control_socket.send_to(boost::asio::buffer(command, 8), remote_control_endpoint);
+    local_control_socket.send_to(boost::asio::buffer(command, 8),
+                                 remote_control_endpoint);
     if (wait_for_reply)
-      local_control_socket.receive_from(boost::asio::buffer(responses[0], 8), remote_control_endpoint);
+      local_control_socket.receive_from(boost::asio::buffer(responses[0], 8),
+                                        remote_control_endpoint);
   }
+
   void async_send_command(char *command)
   {
     // std::cout << "sending... ";
     // std::this_thread::sleep_for(500ms);
     for (int i = 0; i < 8; ++i)
     {
-      // std::cout << std::setw(2) << std::setfill('0') << std::hex <<  (int)(command[i]) << "|";
+      // std::cout << std::setw(2) << std::setfill('0') << std::hex <<
+      // (int)(command[i]) << "|";
     }
     // std::cout << std::endl;
-    local_control_socket.async_send_to(boost::asio::buffer(command, 8), remote_control_endpoint,
-                                       std::bind(&udp_controller::on_control_send, this, command_index, std::placeholders::_1, std::placeholders::_2));
+    local_control_socket.async_send_to(
+        boost::asio::buffer(command, 8), remote_control_endpoint,
+        std::bind(&udp_controller::on_control_send, this, command_index,
+                  std::placeholders::_1, std::placeholders::_2));
     ++command_index;
   }
-  void on_control_send(uint32_t command_index, const boost::system::error_code &error, std::size_t bytes_transferred)
+
+  void on_control_send(uint32_t command_index,
+                       const boost::system::error_code &error,
+                       std::size_t bytes_transferred)
   {
     // std::cout << "Command sent" << std::endl;
     if (!error)
     {
       std::cout << "Packet sent successfully." << std::endl;
-      local_control_socket.async_receive_from(boost::asio::buffer(responses[command_index], 8), sender_endpoint, std::bind(&udp_controller::on_control_receive, this, command_index, std::placeholders::_1, std::placeholders::_2, sender_endpoint));
+      local_control_socket.async_receive_from(
+          boost::asio::buffer(responses[command_index], 8), sender_endpoint,
+          std::bind(&udp_controller::on_control_receive, this, command_index,
+                    std::placeholders::_1, std::placeholders::_2,
+                    sender_endpoint));
     }
     else
     {
@@ -206,7 +232,10 @@ public:
     }
   }
 
-  void on_control_receive(uint32_t command_index, const boost::system::error_code &error, std::size_t bytes_transferred, boost::asio::ip::udp::endpoint sender_endpoint)
+  void on_control_receive(uint32_t command_index,
+                          const boost::system::error_code &error,
+                          std::size_t bytes_transferred,
+                          boost::asio::ip::udp::endpoint sender_endpoint)
   {
     if (!error)
     {
@@ -214,19 +243,29 @@ public:
       std::cout << "Packet succesfully received" << std::endl;
       std::cout << "Response:";
       std::cout << "Command index" << command_index << std::endl;
-      // for (uint32_t byte_offset = 0; byte_offset < bytes_transferred; ++byte_offset)
-      //     std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(responses[command_index][byte_offset]) << "|";
-      if (responses[command_index][6] == static_cast<char>(command_type::GET_CHIP_ID))
+      // for (uint32_t byte_offset = 0; byte_offset < bytes_transferred;
+      // ++byte_offset)
+      //     std::cout << std::setw(2) << std::setfill('0') << std::hex <<
+      //     static_cast<int>(responses[command_index][byte_offset]) << "|";
+      if (responses[command_index][6] ==
+          static_cast<char>(command_type::GET_CHIP_ID))
       {
-        std::cout << "Chip ID" << parser.parse_chip_id(responses[command_index]) << std::endl;
+        std::cout << "Chip ID" << parser.parse_chip_id(responses[command_index])
+                  << std::endl;
       }
-      if (responses[command_index][6] == static_cast<char>(command_type::GET_SENSOR_TEMP))
+      if (responses[command_index][6] ==
+          static_cast<char>(command_type::GET_SENSOR_TEMP))
       {
-        std::cout << "Sensor temp " << parser.parse_single_float(responses[command_index]) << std::endl;
+        std::cout << "Sensor temp "
+                  << parser.parse_single_float(responses[command_index])
+                  << std::endl;
       }
-      if (responses[command_index][6] == static_cast<char>(command_type::GET_BIAS_VOLTAGE))
+      if (responses[command_index][6] ==
+          static_cast<char>(command_type::GET_BIAS_VOLTAGE))
       {
-        std::cout << "Bias voltage " << parser.parse_single_float(responses[command_index]) << std::endl;
+        std::cout << "Bias voltage "
+                  << parser.parse_single_float(responses[command_index])
+                  << std::endl;
       }
       std::cout << std::endl;
     }
@@ -235,32 +274,41 @@ public:
       std::cout << "Encountered error " << error.message() << std::endl;
     }
   }
+
   boost::asio::ip::udp::endpoint sender_endpoint1;
-  std::function<void(const boost::system::error_code &, std::size_t)> on_data_receive_handler =
-      [this](const boost::system::error_code &error, std::size_t bytes_transferred)
-  {
-    on_data_receive(error, bytes_transferred, sender_endpoint1);
-  };
+  std::function<void(const boost::system::error_code &, std::size_t)>
+      on_data_receive_handler = [this](const boost::system::error_code &error,
+                                       std::size_t bytes_transferred)
+  { on_data_receive(error, bytes_transferred, sender_endpoint1); };
   int32_t waiting_handlers_count = 0;
   uint32_t waiting_handlers_expected_count = 1000;
-  void on_data_receive(const boost::system::error_code &error, std::size_t bytes_transferred, boost::asio::ip::udp::endpoint sender_endpoint)
+
+  void on_data_receive(const boost::system::error_code &error,
+                       std::size_t bytes_transferred,
+                       boost::asio::ip::udp::endpoint sender_endpoint)
   {
     bool acq_end = false;
-    auto hits = parser.parse_udp_data_packet(data_response, bytes_transferred, acq_end);
-    // for (uint32_t byte_offset = 0; byte_offset < bytes_transferred; ++byte_offset)
-    //         std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<uint>(data_response[byte_offset]) << "/";
+    auto hits =
+        parser.parse_udp_data_packet(data_response, bytes_transferred, acq_end);
+    // for (uint32_t byte_offset = 0; byte_offset < bytes_transferred;
+    // ++byte_offset)
+    //         std::cout << std::setw(2) << std::setfill('0') << std::hex <<
+    //         static_cast<uint>(data_response[byte_offset]) << "/";
     process_packet_callback(std::move(hits));
     boost::asio::ip::udp::endpoint sender_endpoint1;
     --waiting_handlers_count;
     if (!acq_end)
     {
       // if(waiting_handlers_count < waiting_handlers_expected_count - 100)
-      // for(int i = 0; i < waiting_handlers_expected_count - waiting_handlers_count; i++)
+      // for(int i = 0; i < waiting_handlers_expected_count -
+      // waiting_handlers_count; i++)
       //{
-      local_data_socket.async_receive_from(boost::asio::buffer(data_response, UDP_BOOST_BUFFER_SIZE), sender_endpoint1,
-                                           on_data_receive_handler);
+      local_data_socket.async_receive_from(
+          boost::asio::buffer(data_response, UDP_BOOST_BUFFER_SIZE),
+          sender_endpoint1, on_data_receive_handler);
       //}
-      // std::bind(&udp_controller::on_data_receive, this, std::placeholders::_1, std::placeholders::_2, sender_endpoint1));
+      // std::bind(&udp_controller::on_data_receive, this,
+      // std::placeholders::_1, std::placeholders::_2, sender_endpoint1));
     }
     else
     {
@@ -274,10 +322,15 @@ public:
   {
     bool acq_end = false;
     boost::asio::ip::udp::endpoint sender_endpoint1;
-    auto bytes_transferred = local_data_socket.receive_from(boost::asio::buffer(data_response, UDP_BOOST_BUFFER_SIZE), sender_endpoint1);
-    auto hits = parser.parse_udp_data_packet(data_response, bytes_transferred, acq_end);
-    // for (uint32_t byte_offset = 0; byte_offset < bytes_transferred; ++byte_offset)
-    //         std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<uint>(data_response[byte_offset]) << "/";
+    auto bytes_transferred = local_data_socket.receive_from(
+        boost::asio::buffer(data_response, UDP_BOOST_BUFFER_SIZE),
+        sender_endpoint1);
+    auto hits =
+        parser.parse_udp_data_packet(data_response, bytes_transferred, acq_end);
+    // for (uint32_t byte_offset = 0; byte_offset < bytes_transferred;
+    // ++byte_offset)
+    //         std::cout << std::setw(2) << std::setfill('0') << std::hex <<
+    //         static_cast<uint>(data_response[byte_offset]) << "/";
     if (acq_end)
     {
       acq_end_callback();
@@ -285,6 +338,7 @@ public:
     }
     return hits;
   }
+
   char *set_start_acq_mode(char *mode)
   {
 
@@ -294,26 +348,36 @@ public:
     return command;
   }
 
-  udp_controller(const std::string &ip, std::function<void(std::vector<burda_hit> &&)> &&packet_callback,
-                 std::function<void()> &&on_end_callback) : local_control_socket(service),
-                                                            remote_control_endpoint(boost::asio::ip::address::from_string(ip), CONTROL_PORT),
-                                                            local_data_socket(service),
-                                                            remote_data_endpoint(boost::asio::ip::address::from_string(ip), DATA_PORT),
-                                                            process_packet_callback(packet_callback),
-                                                            acq_end_callback(on_end_callback)
+  udp_controller(
+      const std::string &ip,
+      std::function<void(std::vector<burda_hit> &&)> &&packet_callback,
+      std::function<void()> &&on_end_callback)
+    : local_control_socket(service),
+      remote_control_endpoint(boost::asio::ip::address::from_string(ip),
+                              CONTROL_PORT),
+      local_data_socket(service),
+      remote_data_endpoint(boost::asio::ip::address::from_string(ip),
+                           DATA_PORT),
+      process_packet_callback(packet_callback),
+      acq_end_callback(on_end_callback)
   {
     setup_control();
-    local_data_socket.set_option(boost::asio::socket_base::receive_buffer_size(UDP_OS_BUFFER_SIZE));
+    local_data_socket.set_option(
+        boost::asio::socket_base::receive_buffer_size(UDP_OS_BUFFER_SIZE));
   }
-  udp_controller(const std::string &ip,
-                 std::function<void()> &&on_end_callback) : local_control_socket(service),
-                                                            remote_control_endpoint(boost::asio::ip::address::from_string(ip), CONTROL_PORT),
-                                                            local_data_socket(service),
-                                                            remote_data_endpoint(boost::asio::ip::address::from_string(ip), DATA_PORT),
-                                                            acq_end_callback(on_end_callback)
+
+  udp_controller(const std::string &ip, std::function<void()> &&on_end_callback)
+    : local_control_socket(service),
+      remote_control_endpoint(boost::asio::ip::address::from_string(ip),
+                              CONTROL_PORT),
+      local_data_socket(service),
+      remote_data_endpoint(boost::asio::ip::address::from_string(ip),
+                           DATA_PORT),
+      acq_end_callback(on_end_callback)
   {
     setup_control();
-    local_data_socket.set_option(boost::asio::socket_base::receive_buffer_size(UDP_OS_BUFFER_SIZE));
+    local_data_socket.set_option(
+        boost::asio::socket_base::receive_buffer_size(UDP_OS_BUFFER_SIZE));
   }
 
   void async_start_acq()
@@ -326,13 +390,15 @@ public:
     char *command_BIAS = new char[8]{};
     float bias = BIAS_VOLTAGE;
     std::memcpy(command_BIAS, &bias, 4);
-    command_BIAS[CMD_BYTE_INDEX] = static_cast<char>(command_type::SET_BIAS_VOLTAGE);
+    command_BIAS[CMD_BYTE_INDEX] =
+        static_cast<char>(command_type::SET_BIAS_VOLTAGE);
 
     async_send_command(command_BIAS);
 
     char *command3 = new char[8]{};
 
-    command3[CMD_BYTE_INDEX] = static_cast<char>(command_type::GET_BIAS_VOLTAGE);
+    command3[CMD_BYTE_INDEX] =
+        static_cast<char>(command_type::GET_BIAS_VOLTAGE);
     async_send_command(command3);
     async_send_command(command3);
 
@@ -343,8 +409,11 @@ public:
     char *command4 = new char[8]{};
 
     std::copy(static_cast<const char *>(static_cast<const void *>(&ACQ_TIME)),
-              static_cast<const char *>(static_cast<const void *>(&ACQ_TIME)) + 4, command4);
-    command4[CMD_BYTE_INDEX] = static_cast<char>(command_type::SET_ACQ_TIME_LSB);
+              static_cast<const char *>(static_cast<const void *>(&ACQ_TIME)) +
+                  4,
+              command4);
+    command4[CMD_BYTE_INDEX] =
+        static_cast<char>(command_type::SET_ACQ_TIME_LSB);
     uint64_t acq_time = ACQ_TIME * 100000000;
     for (int i = 0; i < 4; ++i)
       command4[i] = static_cast<char>(acq_time >> (i * 8)) & 0xFF;
@@ -352,9 +421,12 @@ public:
 
     char *command5 = new char[8]{};
 
-    command5[CMD_BYTE_INDEX] = static_cast<char>(command_type::SET_ACQ_TIME_MSB);
-    // std::copy(static_cast<const char *>(static_cast<const void *>(&ACQ_TIME)) + 4,
-    //     static_cast<const char *>(static_cast<const void *>(&ACQ_TIME)) + 8, command5);
+    command5[CMD_BYTE_INDEX] =
+        static_cast<char>(command_type::SET_ACQ_TIME_MSB);
+    // std::copy(static_cast<const char *>(static_cast<const void *>(&ACQ_TIME))
+    // + 4,
+    //     static_cast<const char *>(static_cast<const void *>(&ACQ_TIME)) + 8,
+    //     command5);
 
     for (int i = 4; i < 8; ++i)
       command5[i - 4] = static_cast<char>(acq_time >> (i * 8)) & 0xFF;
@@ -365,11 +437,15 @@ public:
     async_send_command(command6);
 
     boost::asio::ip::udp::endpoint sender_endpoint1;
-    local_data_socket.async_receive_from(boost::asio::buffer(data_response, UDP_BOOST_BUFFER_SIZE), sender_endpoint,
-                                         std::bind(&udp_controller::on_data_receive, this, std::placeholders::_1, std::placeholders::_2, sender_endpoint));
+    local_data_socket.async_receive_from(
+        boost::asio::buffer(data_response, UDP_BOOST_BUFFER_SIZE),
+        sender_endpoint,
+        std::bind(&udp_controller::on_data_receive, this, std::placeholders::_1,
+                  std::placeholders::_2, sender_endpoint));
 
     service.run();
   }
+
   void sync_start_acq()
   {
     char *command = new char[8]{};
@@ -380,13 +456,15 @@ public:
     char *command_BIAS = new char[8]{};
     float bias = BIAS_VOLTAGE;
     std::memcpy(command_BIAS, &bias, 4);
-    command_BIAS[CMD_BYTE_INDEX] = static_cast<char>(command_type::SET_BIAS_VOLTAGE);
+    command_BIAS[CMD_BYTE_INDEX] =
+        static_cast<char>(command_type::SET_BIAS_VOLTAGE);
 
     send_command(command_BIAS);
 
     char *command3 = new char[8]{};
 
-    command3[CMD_BYTE_INDEX] = static_cast<char>(command_type::GET_BIAS_VOLTAGE);
+    command3[CMD_BYTE_INDEX] =
+        static_cast<char>(command_type::GET_BIAS_VOLTAGE);
     send_command(command3);
     send_command(command3);
 
@@ -397,8 +475,11 @@ public:
     char *command4 = new char[8]{};
 
     std::copy(static_cast<const char *>(static_cast<const void *>(&ACQ_TIME)),
-              static_cast<const char *>(static_cast<const void *>(&ACQ_TIME)) + 4, command4);
-    command4[CMD_BYTE_INDEX] = static_cast<char>(command_type::SET_ACQ_TIME_LSB);
+              static_cast<const char *>(static_cast<const void *>(&ACQ_TIME)) +
+                  4,
+              command4);
+    command4[CMD_BYTE_INDEX] =
+        static_cast<char>(command_type::SET_ACQ_TIME_LSB);
     uint64_t acq_time = ACQ_TIME * 100000000;
     for (int i = 0; i < 4; ++i)
       command4[i] = static_cast<char>(acq_time >> (i * 8)) & 0xFF;
@@ -406,9 +487,12 @@ public:
 
     char *command5 = new char[8]{};
 
-    command5[CMD_BYTE_INDEX] = static_cast<char>(command_type::SET_ACQ_TIME_MSB);
-    // std::copy(static_cast<const char *>(static_cast<const void *>(&ACQ_TIME)) + 4,
-    //     static_cast<const char *>(static_cast<const void *>(&ACQ_TIME)) + 8, command5);
+    command5[CMD_BYTE_INDEX] =
+        static_cast<char>(command_type::SET_ACQ_TIME_MSB);
+    // std::copy(static_cast<const char *>(static_cast<const void *>(&ACQ_TIME))
+    // + 4,
+    //     static_cast<const char *>(static_cast<const void *>(&ACQ_TIME)) + 8,
+    //     command5);
 
     for (int i = 4; i < 8; ++i)
       command5[i - 4] = static_cast<char>(acq_time >> (i * 8)) & 0xFF;

@@ -1,14 +1,14 @@
 #pragma once
-#include <iostream>
-#include <fstream>
-#include <memory>
-#include <filesystem>
-#include <sstream>
-#include <cmath>
 #include <algorithm>
-#include <iostream>
-#include <boost/asio.hpp>
 #include <boost/array.hpp>
+#include <boost/asio.hpp>
+#include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <sstream>
+
 // utlility classes used across the whole project
 //  for I/O and other are listed below
 class not_implemented : public std::logic_error
@@ -16,6 +16,7 @@ class not_implemented : public std::logic_error
 public:
   not_implemented();
 };
+
 class basic_path
 {
 protected:
@@ -31,6 +32,7 @@ public:
   std::string last_folder() const;
   std::string parent() const;
 };
+
 class file_path : public basic_path
 {
 
@@ -39,6 +41,7 @@ public:
   file_path(const std::string &path);
   std::string filename() const;
 };
+
 class io_utils
 {
   static constexpr int CR = 13;
@@ -54,6 +57,7 @@ public:
 
   static std::string strip(const std::string &value);
 };
+
 struct coord
 {
   static constexpr uint16_t MAX_VALUE = 256;
@@ -67,9 +71,11 @@ struct coord
   short y() const;
   int32_t linearize() const; // use if untiled coord -> untiled linear
 
-  int32_t linearize(uint32_t tile_size) const; // use if untiled coord -> tiled linear
+  int32_t
+  linearize(uint32_t tile_size) const; // use if untiled coord -> tiled linear
 
-  int32_t linearize_tiled(uint32_t tile_size) const; // use if tiled coord -> tiled linear
+  int32_t linearize_tiled(
+      uint32_t tile_size) const; // use if tiled coord -> tiled linear
 
   bool is_valid_neighbor(const coord &neighbor, int32_t tile_size = 1) const;
 
@@ -107,31 +113,36 @@ std::string double_to_str(number_type number, uint16_t precision = 6)
   std::reverse(str.begin(), str.end());
   return str;
 }
-template <typename T, class enable = void>
-class class_exists
+
+template <typename T, class enable = void> class class_exists
 {
   static constexpr bool value = false;
 };
-template <typename T>
-class class_exists<T, std::enable_if_t<(sizeof(T) > 0)>>
+
+template <typename T> class class_exists<T, std::enable_if_t<(sizeof(T) > 0)>>
 {
   static constexpr bool value = true;
 };
 
 static bool ends_with(const std::string &str, const std::string &suffix)
 {
-  return str.size() > suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+  return str.size() > suffix.size() &&
+         str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
+
 template <typename T>
-static typename std::vector<T>::iterator binary_find(std::vector<T> &array, const T &item)
+static typename std::vector<T>::iterator binary_find(std::vector<T> &array,
+                                                     const T &item)
 {
   if (array.size() == 0)
     return array.end();
   return binary_find_impl(array, item, 0, array.size());
 }
+
 template <typename T>
-static typename std::vector<T>::iterator binary_find_impl(std::vector<T> &array,
-                                                          const T &item, uint32_t left, uint32_t right)
+static typename std::vector<T>::iterator
+binary_find_impl(std::vector<T> &array, const T &item, uint32_t left,
+                 uint32_t right)
 {
   uint32_t mid = (left + right) / 2;
   if (left == mid)
@@ -151,21 +162,23 @@ static typename std::vector<T>::iterator binary_find_impl(std::vector<T> &array,
 template <typename T, template <typename> class template_type>
 struct is_instance_of_template
 {
-  template <typename U>
-  static std::true_type test(const template_type<U> *);
+  template <typename U> static std::true_type test(const template_type<U> *);
   static std::false_type test(...);
 
-  static constexpr bool value = decltype(test(static_cast<T *>(nullptr)))::value;
+  static constexpr bool value =
+      decltype(test(static_cast<T *>(nullptr)))::value;
 };
 
 template <bool B, typename data_type>
-typename std::enable_if<B, uint64_t>::type get_processed_count(const data_type &data)
+typename std::enable_if<B, uint64_t>::type
+get_processed_count(const data_type &data)
 {
   return data.hits().size();
 };
 
 template <bool B, typename data_type>
-typename std::enable_if<!B, uint64_t>::type get_processed_count(const data_type &obj)
+typename std::enable_if<!B, uint64_t>::type
+get_processed_count(const data_type &obj)
 {
   return 1ULL;
 }

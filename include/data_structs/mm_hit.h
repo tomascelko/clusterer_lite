@@ -1,10 +1,11 @@
 #pragma once
-#include <string>
-#include <sstream>
-#include <iostream>
+#include "../other/utils.h"
 #include <fstream>
 #include <iomanip>
-#include "../other/utils.h"
+#include <iostream>
+#include <sstream>
+#include <string>
+
 // suring conversion, the burda_hit is often converted to mm_hit
 // which is easier to use for analysis
 class mm_hit
@@ -28,6 +29,7 @@ public:
   double e() const;
   bool approx_equals(const mm_hit &other);
 };
+
 // hit serialization
 template <typename stream_type>
 stream_type &operator<<(stream_type &os, const mm_hit &hit)
@@ -37,6 +39,7 @@ stream_type &operator<<(stream_type &os, const mm_hit &hit)
 
   return os;
 }
+
 // hit deserialization
 template <typename stream_type>
 stream_type &operator>>(stream_type &istream, mm_hit &hit)

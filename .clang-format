@@ -1,0 +1,14 @@
+BasedOnStyle: LLVM
+IndentWidth: 2
+ConstructorInitializerIndentWidth: 2
+UseTab: Never
+
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
+BreakBeforeBraces: Allman
+BraceWrapping:
+  AfterFunction: true
+  AfterControlStatement: true
+  SplitEmptyFunction: true
+SeparateDefinitionBlocks: Always

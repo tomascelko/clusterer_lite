@@ -1,12 +1,12 @@
 #pragma once
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <memory>
 #include "../data_structs/burda_hit.h"
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <vector>
+
 // a node which reads the data from a stream using >> operator
-template <typename istream_type>
-class data_reader
+template <typename istream_type> class data_reader
 {
 protected:
   // uint64_t total_hits_read_;
@@ -14,7 +14,8 @@ protected:
   bool done_ = false;
 
 public:
-  data_reader(const std::string &file_name) : input_stream_(std::move(std::make_unique<istream_type>(file_name)))
+  data_reader(const std::string &file_name)
+    : input_stream_(std::move(std::make_unique<istream_type>(file_name)))
 
   {
     check_input_stream(file_name);
@@ -26,22 +27,21 @@ public:
       io_utils::skip_comment_lines(*istream_optional);
     }
   }
-  bool done()
-  {
-    return done_;
-  }
-  std::string name()
-  {
-    return "reader";
-  }
+
+  bool done() { return done_; }
+
+  std::string name() { return "reader"; }
+
   // verify stream is opened
   void check_input_stream(const std::string &filename)
   {
     if (!input_stream_->is_open())
     {
-      throw std::invalid_argument("Could not open selected input stream: '" + filename + "'");
+      throw std::invalid_argument("Could not open selected input stream: '" +
+                                  filename + "'");
     }
   }
+
   burda_hit process_hit()
   {
     burda_hit data;

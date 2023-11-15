@@ -1,15 +1,15 @@
 #pragma once
-#include <iostream>
-#include <fstream>
-#include <memory>
-#include <ctime>
-#include <iomanip>
-#include <sstream>
+#include "utils.h"
+#include <array>
 #include <charconv>
+#include <ctime>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <memory>
+#include <sstream>
 #include <string_view>
 #include <system_error>
-#include <array>
-#include "utils.h"
 
 // represents a clustered mm stream open for writing
 class mm_write_stream
@@ -25,7 +25,8 @@ class mm_write_stream
   uint64_t current_byte = 0;
   uint64_t clusters_written_ = 0;
   uint64_t new_pixels_written_ = 0;
-  // we perform the writing in a buffered manner for efficiency of I/O operations
+  // we perform the writing in a buffered manner for efficiency of I/O
+  // operations
   std::unique_ptr<std::stringstream> px_buffer_;
   std::unique_ptr<std::stringstream> cl_buffer_;
   // number of hits after which the buffers are flushed
@@ -34,7 +35,8 @@ class mm_write_stream
   void open_streams(const std::string &ini_file)
   {
     std::string path_suffix = ini_file.substr(ini_file.find_last_of("\\/") + 1);
-    std::string path_prefix = ini_file.substr(0, ini_file.find_last_of("\\/") + 1);
+    std::string path_prefix =
+        ini_file.substr(0, ini_file.find_last_of("\\/") + 1);
     if (ini_file.find_last_of("\\/") == std::string::npos)
     {
       // handle special case where no path is given
@@ -50,7 +52,8 @@ class mm_write_stream
     std::ofstream ini_filestream(path_prefix + ini_file_name);
     if (!ini_filestream.is_open())
     {
-      throw std::invalid_argument("The output location'" + path_prefix + ini_file_name + "'does not exist");
+      throw std::invalid_argument("The output location'" + path_prefix +
+                                  ini_file_name + "'does not exist");
     }
     ini_filestream << "[Measurement]" << std::endl;
     ini_filestream << "PxFile=" << px_file_name << std::endl;
@@ -58,8 +61,10 @@ class mm_write_stream
     ini_filestream << "Format=txt" << std::endl;
     ini_filestream.close();
 
-    cl_file_ = std::move(std::make_unique<std::ofstream>(path_prefix + cl_file_name));
-    px_file_ = std::move(std::make_unique<std::ofstream>(path_prefix + px_file_name));
+    cl_file_ =
+        std::move(std::make_unique<std::ofstream>(path_prefix + cl_file_name));
+    px_file_ =
+        std::move(std::make_unique<std::ofstream>(path_prefix + px_file_name));
   }
 
 public:
@@ -69,6 +74,7 @@ public:
     cl_buffer_ = std::move(std::make_unique<std::stringstream>());
     px_buffer_ = std::move(std::make_unique<std::stringstream>());
   }
+
   void close()
   {
     *cl_file_ << cl_buffer_->rdbuf();
@@ -81,7 +87,8 @@ public:
   mm_write_stream &operator<<(const cluster_type &cluster)
   {
     *cl_buffer_ << double_to_str(cluster.first_toa()) << " ";
-    *cl_buffer_ << cluster.hit_count() << " " << current_line << " " << current_byte << "\n";
+    *cl_buffer_ << cluster.hit_count() << " " << current_line << " "
+                << current_byte << "\n";
     ++clusters_written_;
     // px_buffer_.precision(6);
     for (const auto &hit : cluster.hits())
@@ -109,6 +116,7 @@ public:
     return *this;
   }
 };
+
 // represents a clustered dataset in mm file format ready for reading
 class mm_read_stream
 {
@@ -121,11 +129,13 @@ class mm_read_stream
   uint64_t clusters_written_ = 0;
   uint64_t new_pixels_written_ = 0;
   bool calib_ = true;
+
   void open_streams(const std::string &ini_file)
   {
     // std::cout << ini_file << std::endl;
     std::string path_suffix = ini_file.substr(ini_file.find_last_of("\\/") + 1);
-    std::string path_prefix = ini_file.substr(0, ini_file.find_last_of("\\/") + 1);
+    std::string path_prefix =
+        ini_file.substr(0, ini_file.find_last_of("\\/") + 1);
     if (ini_file.find_last_of("\\/") == std::string::npos)
     {
       // handle special case where no path is given
@@ -142,9 +152,11 @@ class mm_read_stream
         std::string prop_key = ini_line.substr(0, delim_pos);
         std::string prop_value = ini_line.substr(delim_pos + 1);
         if (prop_key == CL_KEY)
-          cl_file_ = std::move(std::make_unique<std::ifstream>(path_prefix + prop_value));
+          cl_file_ = std::move(
+              std::make_unique<std::ifstream>(path_prefix + prop_value));
         else if (prop_key == PX_KEY)
-          px_file_ = std::move(std::make_unique<std::ifstream>(path_prefix + prop_value));
+          px_file_ = std::move(
+              std::make_unique<std::ifstream>(path_prefix + prop_value));
       }
     }
 
@@ -159,18 +171,21 @@ public:
   {
     open_streams(ini_filename);
   }
+
   bool is_open()
   {
     return cl_file_ && px_file_ && cl_file_->is_open() && px_file_->is_open();
   }
+
   virtual ~mm_read_stream() = default;
+
   void close()
   {
     cl_file_->close();
     px_file_->close();
   }
-  template <typename hit_type>
-  mm_read_stream &operator>>(cluster<hit_type> &cl)
+
+  template <typename hit_type> mm_read_stream &operator>>(cluster<hit_type> &cl)
   {
     cl = cluster<hit_type>();
     io_utils::skip_eol(*cl_file_);
