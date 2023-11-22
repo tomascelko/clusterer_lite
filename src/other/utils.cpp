@@ -5,42 +5,6 @@
 
 not_implemented::not_implemented() : std::logic_error("not yet implemented") {}
 
-std::filesystem::path path_;
-std::filesystem::path current_path_ = std::filesystem::current_path();
-
-basic_path::basic_path() {}
-
-basic_path::basic_path(const std::string &path) : path_(path) {}
-
-std::string basic_path::as_absolute() const
-{
-  return std::filesystem::absolute(path_).string();
-}
-
-std::string basic_path::as_relative() const
-{
-  return std::filesystem::relative(current_path_, path_).string();
-}
-
-std::string basic_path::last_folder() const
-{
-  const int32_t sep_position = path_.string().find_last_of("/\\");
-  std::string temp = path_.string().substr(sep_position + 1);
-
-  return temp;
-}
-
-std::string basic_path::parent() const
-{
-  return std::filesystem::absolute(path_.parent_path()).string();
-}
-
-file_path::file_path() {}
-
-file_path::file_path(const std::string &path) : basic_path(path) {}
-
-std::string file_path::filename() const { return path_.filename().string(); }
-
 bool io_utils::is_separator(char character)
 {
   const int SEPARATORS_ASCII_IDEX = 33;

@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <climits>
 #include <cmath>
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -15,31 +14,6 @@ class not_implemented : public std::logic_error
 {
 public:
   not_implemented();
-};
-
-class basic_path
-{
-protected:
-  std::filesystem::path path_;
-  std::filesystem::path current_path_ = std::filesystem::current_path();
-
-public:
-  basic_path();
-  basic_path(const std::string &path);
-
-  std::string as_absolute() const;
-  std::string as_relative() const;
-  std::string last_folder() const;
-  std::string parent() const;
-};
-
-class file_path : public basic_path
-{
-
-public:
-  file_path();
-  file_path(const std::string &path);
-  std::string filename() const;
 };
 
 class io_utils
