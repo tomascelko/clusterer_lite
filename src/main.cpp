@@ -27,7 +27,8 @@ bool try_buffer_clustering()
   current_chip::chip_type::size());
 
   //or create your own calibration matrices and load them to the calibration,
-  //ensure that they have correct shape
+  //ensure that they have correct shape size_y() x size_x()
+  // the shape should be the same as in a.txt file
 
 
   std::vector<std::vector<double>> a_values{};
