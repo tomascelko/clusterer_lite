@@ -1,4 +1,6 @@
 #pragma once
+#include <cstdint>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -25,6 +27,11 @@ public:
     {
       process_single_data(std::move(*data_it));
     }
+  }
+
+  void write_bytes(char *bytes, uint16_t count = 6)
+  {
+    out_stream_.write(bytes, count);
   }
 
   void close() { out_stream_->close(); }

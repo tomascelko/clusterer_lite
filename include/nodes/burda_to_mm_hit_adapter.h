@@ -44,6 +44,13 @@ public:
   {
   }
 
+  burda_to_mm_hit_adapter(const calibration &calib)
+    : chip_height_(current_chip::chip_type::size_x()),
+      chip_width_(current_chip::chip_type::size_y()), calibrate_(true),
+      calibrator_(std::make_unique<calibration>(calib))
+  {
+  }
+
   std::string name() { return "burda_to_mm_adapter"; }
 
   virtual ~burda_to_mm_hit_adapter() = default;

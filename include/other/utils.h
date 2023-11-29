@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <climits>
 #include <cmath>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -28,7 +29,7 @@ public:
   static void skip_eol(std::istream &stream);
   static void skip_comment_lines(std::istream &stream);
   static void skip_bom(std::istream &stream);
-
+  static uint64_t read_to_buffer(const std::string &file_name, char *&buffer);
   static std::string strip(const std::string &value);
 };
 

@@ -4,6 +4,7 @@
 #include "../data_structs/node_args.h"
 #include "../devices/current_device.h"
 #include "../other/utils.h"
+#include <cstdint>
 #include <deque>
 #include <fstream>
 #include <iostream>
@@ -58,6 +59,9 @@ private:
   using hit_vect_iterator = std::vector<mm_hit>::iterator;
   using optional_clusters =
       std::optional<std::vector<mm_hit, std::allocator<mm_hit>>>;
+  uint64_t merge_count_ = 0;
+  std::vector<cluster<mm_hit>> result_clusters_;
+  uint64_t processed_clusters_ = 0;
 
 protected:
   double cluster_diff_dt =
@@ -218,6 +222,7 @@ public:
     case 0:
       // pixel does not belong to any cluster, create a new one
       unfinished_clusters_.emplace_front(unfinished_cluster<mm_hit>{});
+      processed_clusters_++;
       unfinished_clusters_.begin()->self = unfinished_clusters_.begin();
       ++unfinished_clusters_count_;
       target_cluster = unfinished_clusters_.begin();
@@ -228,12 +233,14 @@ public:
     default:
       // we found the largest cluster and move hits from smaller clusters to the
       // biggest one
+      ++merge_count_;
       for (auto &neighboring_cluster_it : neighboring_clusters)
       {
         // merge clusters and then add pixel to it
         if (neighboring_cluster_it != target_cluster)
         {
           merge_clusters(*target_cluster, *neighboring_cluster_it);
+          processed_clusters_--;
         }
       }
       break;
@@ -242,8 +249,7 @@ public:
     ++processed_hit_count_;
   }
 
-  std::vector<cluster<mm_hit>> process_hits(hit_vect_iterator first,
-                                            hit_vect_iterator last)
+  void process_hits(hit_vect_iterator first, hit_vect_iterator last)
   {
     std::vector<cluster<mm_hit>> old_clusters;
     for (auto hit_it = first; hit_it != last; ++hit_it)
@@ -253,7 +259,8 @@ public:
       if (processed_hit_count_ % WRITE_INTERVAL == 0)
         get_old_clusters(old_clusters, current_toa);
     }
-    return old_clusters;
+    result_clusters_.insert(result_clusters_.end(), old_clusters.begin(),
+                            old_clusters.end());
   }
 
   std::vector<cluster<mm_hit>> process_remaining()
@@ -261,6 +268,9 @@ public:
     finished_ = true;
     std::vector<cluster<mm_hit>> old_clusters;
     get_old_clusters(old_clusters);
+    std::cout << "Merge happened " << merge_count_ << " times" << std::endl;
+    std::cout << "Total hits processed " << processed_hit_count_ << std::endl;
+    std::cout << "Processed clusters " << processed_clusters_ << std::endl;
     return old_clusters;
   }
 
@@ -271,10 +281,13 @@ public:
                     args.get_arg<int>(name(), "tile_size"))),
       tile_size_(args.get_arg<int>(name(), "tile_size")),
       unfinished_clusters_count_(0), processed_hit_count_(0), current_toa_(0),
-      cluster_diff_dt(args.get_arg<double>(name(), "max_dt"))
+      cluster_diff_dt(args.get_arg<double>(name(), "max_dt")),
+      result_clusters_()
   {
     return;
   }
+
+  std::vector<cluster<mm_hit>> &result_clusters() { return result_clusters_; }
 
   double current_toa() { return current_toa_; }
 

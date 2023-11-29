@@ -90,6 +90,25 @@ bool burda_hit::operator==(const burda_hit &other) const
 }
 
 // serialization of the hit
+
+/*std::ofstream &operator<<(std::ofstream &os, const burda_hit &hit)
+{
+
+  uint64_t packet_bytes6 = 0;
+  packet_bytes6 |= 0x4UL << 44;
+  packet_bytes6 |= hit.linear_coord() << 28;
+  auto moduled_tick_toa = hit.tick_toa() % burda_hit::offset_modulus;
+  if (hit.tick_toa() > burda_hit::offset_modulus >> 1 &&
+      moduled_tick_toa < burda_hit::offset_modulus >> 1)
+    moduled_tick_toa += burda_hit::offset_modulus >> 1;
+  packet_bytes6 |= (moduled_tick_toa << 14) & 0xfffffff;
+  packet_bytes6 |= (hit.tot() << 4) & 0x3fff;
+  packet_bytes6 |= hit.fast_toa() & 0xf;
+  os.write(reinterpret_cast<const char *>(&packet_bytes6), 6);
+  return os;
+}
+*/
+
 std::ostream &operator<<(std::ostream &os, const burda_hit &hit)
 {
   os << hit.linear_coord() << " " << hit.toa() << " " << hit.fast_toa() << " "

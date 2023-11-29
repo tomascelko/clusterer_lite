@@ -1,5 +1,6 @@
 #pragma once
 #include "../other/utils.h"
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -27,8 +28,10 @@ public:
   bool is_valid();
   uint16_t linear_coord() const;
   static constexpr double fast_clock_dt = 1.5625;
-
   static constexpr double slow_clock_dt = 25.;
+  static constexpr uint64_t max_offset_ticks = 100000;
+  static constexpr uint64_t offset_tick_size = 16384;
+  static constexpr uint64_t offset_modulus = 16384;
   uint64_t tick_toa() const;
   double toa() const;
   double time() const;

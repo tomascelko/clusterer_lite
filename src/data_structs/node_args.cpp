@@ -39,8 +39,6 @@ node_args::node_args()
 {
   args_data_ = {
       {"reader", node_args_type({{"sleep_duration_full_memory", "100"}})},
-      {"clusterer",
-       node_args_type(
-           {{"tile_size", "1"}, {"max_dt", "200"}, {"type", "standard"}})},
+      {"clusterer", node_args_type({{"tile_size", "1"}, {"max_dt", "200"}})},
   };
 }

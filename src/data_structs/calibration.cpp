@@ -56,6 +56,35 @@ calibration::calibration(const std::string &calib_folder,
   load_calib_vector(formatted_folder + std::string(t_suffix), chip_size, t_);
 }
 
+calibration::calibration(const std::vector<std::vector<double>> &a,
+                         const std::vector<std::vector<double>> &b,
+                         const std::vector<std::vector<double>> &c,
+                         const std::vector<std::vector<double>> &t)
+  : a_(a), b_(b), c_(c), t_(t)
+{
+}
+
+void calibration::set_calib(
+    const std::vector<std::vector<double>> &calib_matrix,
+    calibration::calib_type matrix_name)
+{
+  switch (matrix_name)
+  {
+  case calibration::calib_type::A:
+    a_ = calib_matrix;
+    break;
+  case calibration::calib_type::B:
+    b_ = calib_matrix;
+    break;
+  case calibration::calib_type::C:
+    c_ = calib_matrix;
+    break;
+  case calibration::calib_type::T:
+    t_ = calib_matrix;
+    break;
+  }
+}
+
 // does the conversion from ToT to E[keV]
 double calibration::compute_energy(short x, short y, double tot)
 {

@@ -70,6 +70,25 @@ std::string io_utils::strip(const std::string &value)
   return value.substr(start_index, end_index + 1);
 }
 
+uint64_t io_utils::read_to_buffer(const std::string &file_name, char *&buffer)
+{
+  std::ifstream file_check(file_name, std::ios::binary | std::ios::ate);
+  std::streamsize file_size = file_check.tellg();
+  file_check.close();
+  std::ifstream file(file_name, std::ios::binary);
+
+  // Allocate memory to store the file content
+  buffer = new char[file_size];
+  file.read(buffer, file_size);
+  if (file.is_open())
+    return file_size;
+  else
+  {
+    throw std::invalid_argument(
+        "Selected file was not sucessfully opened for conversion");
+  };
+}
+
 coord::coord() {}
 
 coord::coord(short x, short y) : x_(x), y_(y) {}
