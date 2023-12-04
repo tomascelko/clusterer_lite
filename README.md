@@ -25,15 +25,16 @@ A liteweight single-threaded implementation of the event-building for data drive
 
 # Usage
 
-* Run from terminal with two mandatory arguments:
+* Run from terminal with three mandatory arguments:
+  * processing option either -t or -b (for processing either burdaman text files or raw binary files respectively)   
   * path to the data file
-  * path to the calibration folder containing the following files:
+  * path to the calibration folder containing the following configuration files:
     * a.txt
     * b.txt
     * c.txt
     * t.txt
 * Example call:
-  ```/path/to/executable/clusterer /path/to/data/file /path/to/calibration/folder```
+  ```/path/to/executable/clusterer -b /path/to/data/file /path/to/calibration/folder```
 * The output is written to the original file location
 * The name of the output file is created in the following steps
   * Any suffix after '.' symbol is removed
