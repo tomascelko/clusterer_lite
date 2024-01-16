@@ -71,7 +71,7 @@ class cluster_splitter
 
   void store_to_matrix(const cluster<mm_hit> &cluster)
   {
-    const uint64_t MAX_SAME_HIT_COUNT = 100;
+    const size_t MAX_SAME_HIT_COUNT = 10;
     for (const auto &hit : cluster.hits())
     {
       pixel_matrix_.at(hit.x(), hit.y())
