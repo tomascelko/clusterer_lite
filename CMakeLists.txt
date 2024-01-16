@@ -6,7 +6,7 @@ project(clusterer)
 # add the executable
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_FLAGS " -lstdc++fs")
+set(CMAKE_CXX_FLAGS "")
 set(CMAKE_BUILD_TYPE "Release")
 
 set(Boost_USE_STATIC_LIBS OFF) 
@@ -23,9 +23,7 @@ file(GLOB_RECURSE SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 file(GLOB_RECURSE LIB_SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
-#    ${CMAKE_CURRENT_SOURCE_DIR}/include/*.cpp
 )
-#add_library(clusterer_lib ${SOURCES} ${HEADERS})
 add_executable(clusterer ${SOURCES})
 target_include_directories(clusterer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 
